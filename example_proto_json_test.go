@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/momopluto/json"
+	"reflect"
+	"strconv"
 	"sync"
 	"testing"
 )
@@ -162,5 +164,109 @@ omitempty work  :	 {"struct2":{}}
 ignore omitempty:	 {"int64_slice":[],"struct_slice":[],"struct2":{}}
 ---------------------------
 --- PASS: TestNilSliceIgnoreOmitempty (0.00s)
+PASS
+*/
+
+func TestFillPbDefaultVal(t *testing.T) {
+	testCases := []string{
+		`{}`,
+
+		// 测试 slice 和 struct 填充 default 值
+		`{"struct_slice":[{"key":"key1"},{"value":"value2"}],"struct2":{}}`,
+	}
+
+	for _, str := range testCases {
+		fmt.Printf("              input:\t %s\n", str)
+		rsp := &MockPbStruct{}
+		_ = officialjson.Unmarshal([]byte(str), rsp)
+		var pm proto.Message
+		pm = rsp
+
+		rspByte1, _ := officialjson.Marshal(rsp)
+		fmt.Printf("before fill default:\t %s\n", string(rspByte1))
+
+		FillPbDefaultVal(reflect.ValueOf(pm))
+
+		rspByte2, _ := officialjson.Marshal(rsp)
+		fmt.Printf(" after fill default:\t %s\n", string(rspByte2))
+
+		fmt.Println("---------------------------")
+	}
+}
+
+func FillPbDefaultVal(val reflect.Value) {
+	// traverse until done
+
+	sv := reflect.Indirect(val)
+	if sv.Kind() == reflect.Struct {
+		st := sv.Type()
+		sprops := proto.GetProperties(st)
+		for i := 0; i < st.NumField(); i++ {
+			sf := sv.Field(i)
+			switch reflect.Indirect(sf).Kind() {
+			case reflect.Struct:
+				// entry next level
+				FillPbDefaultVal(sf)
+			case reflect.Slice:
+				for j := 0; j < sf.Len(); j++ {
+					sfj := sf.Index(j)
+					if reflect.Indirect(sfj).Kind() == reflect.Struct {
+						// entry next level
+						FillPbDefaultVal(sfj)
+					}
+				}
+			default:
+				props := sprops.Prop[i]
+				if props.HasDefault && props.Default != "" {
+					trySetDefaultValue(sf, props.Default)
+				}
+			}
+		}
+	}
+}
+
+func trySetDefaultValue(x reflect.Value, def string) bool {
+	if x.IsValid() && x.Kind() == reflect.Ptr && x.IsZero() == true && def != "" && x.CanSet() {
+		x.Set(reflect.New(x.Type().Elem()))
+		x = reflect.Indirect(x)
+
+		defV := reflect.Value{}
+
+		switch x.Kind() { // 目前 proto2 协议中只处理这3种
+		case reflect.Bool:
+			bv := false
+			if def == "1" {
+				bv = true
+			}
+			defV = reflect.ValueOf(bv)
+		case reflect.String:
+			defV = reflect.ValueOf(def)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			i64, _ := strconv.ParseInt(def, 10, 64)
+			defV = reflect.ValueOf(i64)
+		default:
+			fmt.Printf("unhandled kind = %v\n", x.Kind())
+			return false
+		}
+
+		x.Set(defV.Convert(x.Type()))
+		return true
+	}
+
+	return false
+}
+
+/*
+=== RUN   TestFillPbDefaultVal
+              input:	 {}
+before fill default:	 {}
+ after fill default:	 {"int32_with_def":10,"bool_with_def":true,"string_with_def":"test-string","enum_with_def":1}
+---------------------------
+              input:	 {"struct_slice":[{"key":"key1"},{"value":"value2"}],"struct2":{}}
+before fill default:	 {"struct_slice":[{"key":"key1"},{"value":"value2"}],"struct2":{}}
+ after fill default:	 {"int32_with_def":10,"bool_with_def":true,"string_with_def":"test-string","enum_with_def":1,"struct_slice":[{"key":"key1","def":"def-str"},{"value":"value2","def":"def-str"}],"struct2":{"def":"def-str"}}
+---------------------------
+--- PASS: TestFillPbDefaultVal (0.00s)
 PASS
 */
