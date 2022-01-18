@@ -1,7 +1,12 @@
 package json_test
 
 import (
+	officialjson "encoding/json"
+	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/momopluto/json"
+	"sync"
+	"testing"
 )
 
 /*
@@ -114,4 +119,48 @@ func (*MockPbStruct) ProtoMessage()    {}
 
 // -----------------------------------------------------------------------------------------
 
+func TestNilSliceIgnoreOmitempty(t *testing.T) {
+	testCases := []string{
+		`{}`,
+		`{"int64_slice":[],"struct_slice":[],"struct2":null}`, // 和上述结果一致
+		// 注意: "struct2":{} 转成 pb 会分配内存空间不算空, "struct2":null 才算空
+		`{"struct2":{}}`,
+	}
 
+	once := sync.Once{}
+	once.Do(func() {
+		json.Init(true) // 只能初始化1次. 因为 json 处理每个字段有缓存, 之后再调用此函数无法保证结果
+	})
+
+	for _, str := range testCases {
+		fmt.Printf("           input:\t %s\n", str)
+		rsp := &MockPbStruct{}
+		_ = officialjson.Unmarshal([]byte(str), rsp)
+
+		rspByte1, _ := officialjson.Marshal(rsp)
+		fmt.Printf("omitempty work  :\t %s\n", string(rspByte1))
+
+		rspByte3, _ := json.MarshalSafeCollections(rsp)
+		fmt.Printf("ignore omitempty:\t %s\n", string(rspByte3))
+
+		fmt.Println("---------------------------")
+	}
+}
+
+/*
+=== RUN   TestNilSliceIgnoreOmitempty
+		  input:	 {}
+omitempty work  :	 {}
+ignore omitempty:	 {"int64_slice":[],"struct_slice":[]}
+---------------------------
+		  input:	 {"int64_slice":[],"struct_slice":[],"struct2":null}
+omitempty work  :	 {}
+ignore omitempty:	 {"int64_slice":[],"struct_slice":[]}
+---------------------------
+		  input:	 {"struct2":{}}
+omitempty work  :	 {"struct2":{}}
+ignore omitempty:	 {"int64_slice":[],"struct_slice":[],"struct2":{}}
+---------------------------
+--- PASS: TestNilSliceIgnoreOmitempty (0.00s)
+PASS
+*/
