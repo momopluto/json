@@ -374,6 +374,15 @@ func (e *encodeState) reflectValue(v reflect.Value, opts encOpts) {
 	valueEncoder(v)(e, v, opts)
 }
 
+// _nilSliceIgnoreOmitempty marshals a nil slices ignore tag 'omitempty'
+var _nilSliceIgnoreOmitempty bool
+
+// nil struct return null is same as return nothing, so no need to handle
+
+func Init(nilSliceIgnoreOmitempty bool) {
+	_nilSliceIgnoreOmitempty = nilSliceIgnoreOmitempty
+}
+
 type encOpts struct {
 	// quoted causes primitive fields to be encoded inside JSON strings.
 	quoted bool
@@ -1294,12 +1303,17 @@ func typeFields(t reflect.Type) structFields {
 					if name == "" {
 						name = sf.Name
 					}
+					omitempty := opts.Contains("omitempty")
+					if omitempty &&
+						(_nilSliceIgnoreOmitempty && ft.Kind() == reflect.Slice) {
+						omitempty = false // force ignore
+					}
 					field := field{
 						name:      name,
 						tag:       tagged,
 						index:     index,
 						typ:       ft,
-						omitEmpty: opts.Contains("omitempty"),
+						omitEmpty: omitempty,
 						quoted:    quoted,
 					}
 					field.nameBytes = []byte(field.name)
