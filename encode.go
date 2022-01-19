@@ -343,6 +343,7 @@ func (e *encodeState) marshal(v interface{}, opts encOpts) (err error) {
 			}
 		}
 	}()
+	Init(false)
 	e.reflectValue(reflect.ValueOf(v), opts)
 	return nil
 }
