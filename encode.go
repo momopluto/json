@@ -343,7 +343,6 @@ func (e *encodeState) marshal(v interface{}, opts encOpts) (err error) {
 			}
 		}
 	}()
-	Init(false)
 	e.reflectValue(reflect.ValueOf(v), opts)
 	return nil
 }
@@ -1431,6 +1430,7 @@ var fieldCache sync.Map // map[reflect.Type]structFields
 
 // cachedTypeFields is like typeFields but uses a cache to avoid repeated work.
 func cachedTypeFields(t reflect.Type) structFields {
+	Init(false)
 	if f, ok := fieldCache.Load(t); ok {
 		return f.(structFields)
 	}
