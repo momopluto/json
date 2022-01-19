@@ -7,7 +7,6 @@ import (
 	"github.com/momopluto/json"
 	"reflect"
 	"strconv"
-	"sync"
 	"testing"
 )
 
@@ -129,10 +128,7 @@ func TestNilSliceIgnoreOmitempty(t *testing.T) {
 		`{"struct2":{}}`,
 	}
 
-	once := sync.Once{}
-	once.Do(func() {
-		json.Init(true) // 只能初始化1次. 因为 json 处理每个字段有缓存, 之后再调用此函数无法保证结果
-	})
+	json.Init(true)
 
 	for _, str := range testCases {
 		fmt.Printf("           input:\t %s\n", str)
@@ -141,6 +137,8 @@ func TestNilSliceIgnoreOmitempty(t *testing.T) {
 
 		rspByte1, _ := officialjson.Marshal(rsp)
 		fmt.Printf("omitempty work  :\t %s\n", string(rspByte1))
+
+		json.Init(false) // no effect because of sync.Once
 
 		rspByte3, _ := json.MarshalSafeCollections(rsp)
 		fmt.Printf("ignore omitempty:\t %s\n", string(rspByte3))

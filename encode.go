@@ -379,8 +379,12 @@ var _nilSliceIgnoreOmitempty bool
 
 // nil struct return null is same as return nothing, so no need to handle
 
+var once sync.Once
+
 func Init(nilSliceIgnoreOmitempty bool) {
-	_nilSliceIgnoreOmitempty = nilSliceIgnoreOmitempty
+	once.Do(func() { // because of cachedTypeFields(), here can only initialize once.
+		_nilSliceIgnoreOmitempty = nilSliceIgnoreOmitempty
+	})
 }
 
 type encOpts struct {
