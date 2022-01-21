@@ -16,9 +16,9 @@ import (
 
 enum MockPbEnum
 {
-	PS_MNG = 0;
-	PS_MEMBER = 1;
-	PS_MM = 2;
+	MC_MNG = 0;
+	MC_MEMBER = 1;
+	MC_MM = 2;
 }
 message MockInnerPbStruct
 {
@@ -34,7 +34,7 @@ message MockPbStruct
 	optional bool  				bool_with_no_def 	= 4;
 	optional string 			string_with_def 	= 5 [default = "test-string"];
 	optional string 			string_with_no_def 	= 6;
-	optional MockPbEnum 		enum_with_def 		= 7 [default = PS_MNG];
+	optional MockPbEnum 		enum_with_def 		= 7 [default = MC_MEMBER];
 	optional MockPbEnum 		enum_with_no_def 	= 8;
 
 	repeated int64 				int64_slice 		= 9;
@@ -51,20 +51,20 @@ message MockPbStruct
 type MockPbEnum int32
 
 const (
-	MockPbEnum_PS_MNG    MockPbEnum = 0
-	MockPbEnum_PS_MEMBER MockPbEnum = 1
-	MockPbEnum_PS_MM     MockPbEnum = 2
+	MockPbEnum_MC_MNG    MockPbEnum = 0
+	MockPbEnum_MC_MEMBER MockPbEnum = 1
+	MockPbEnum_MC_MM     MockPbEnum = 2
 )
 
 var MockPbEnum_name = map[int32]string{
-	0: "PS_MNG",
-	1: "PS_MEMBER",
-	2: "PS_MM",
+	0: "MC_MNG",
+	1: "MC_MEMBER",
+	2: "MC_MM",
 }
 var MockPbEnum_value = map[string]int32{
-	"PS_MNG":    0,
-	"PS_MEMBER": 1,
-	"PS_MM":     2,
+	"MC_MNG":    0,
+	"MC_MEMBER": 1,
+	"MC_MM":     2,
 }
 
 func (x MockPbEnum) Enum() *MockPbEnum {
@@ -95,6 +95,29 @@ func (m *MockInnerPbStruct) Reset()         { *m = MockInnerPbStruct{} }
 func (m *MockInnerPbStruct) String() string { return proto.CompactTextString(m) }
 func (*MockInnerPbStruct) ProtoMessage()    {}
 
+const Default_MockInnerPbStruct_Def string = "def-str"
+
+func (m *MockInnerPbStruct) GetKey() string {
+	if m != nil && m.Key != nil {
+		return *m.Key
+	}
+	return ""
+}
+
+func (m *MockInnerPbStruct) GetValue() string {
+	if m != nil && m.Value != nil {
+		return *m.Value
+	}
+	return ""
+}
+
+func (m *MockInnerPbStruct) GetDef() string {
+	if m != nil && m.Def != nil {
+		return *m.Def
+	}
+	return Default_MockInnerPbStruct_Def
+}
+
 type MockPbStruct struct {
 	// 问题1: pb default 值转 json 会丢失
 	Int32WithDef    *int32      `protobuf:"varint,1,opt,name=int32_with_def,def=10" json:"int32_with_def,omitempty"`
@@ -117,6 +140,88 @@ type MockPbStruct struct {
 func (m *MockPbStruct) Reset()         { *m = MockPbStruct{} }
 func (m *MockPbStruct) String() string { return proto.CompactTextString(m) }
 func (*MockPbStruct) ProtoMessage()    {}
+
+const Default_MockPbStruct_Int32WithDef int32 = 10
+const Default_MockPbStruct_BoolWithDef bool = true
+const Default_MockPbStruct_StringWithDef string = "test-string"
+const Default_MockPbStruct_EnumWithDef MockPbEnum = MockPbEnum_MC_MNG
+
+func (m *MockPbStruct) GetInt32WithDef() int32 {
+	if m != nil && m.Int32WithDef != nil {
+		return *m.Int32WithDef
+	}
+	return Default_MockPbStruct_Int32WithDef
+}
+
+func (m *MockPbStruct) GetInt32WithNoDef() int32 {
+	if m != nil && m.Int32WithNoDef != nil {
+		return *m.Int32WithNoDef
+	}
+	return 0
+}
+
+func (m *MockPbStruct) GetBoolWithDef() bool {
+	if m != nil && m.BoolWithDef != nil {
+		return *m.BoolWithDef
+	}
+	return Default_MockPbStruct_BoolWithDef
+}
+
+func (m *MockPbStruct) GetBoolWithNoDef() bool {
+	if m != nil && m.BoolWithNoDef != nil {
+		return *m.BoolWithNoDef
+	}
+	return false
+}
+
+func (m *MockPbStruct) GetStringWithDef() string {
+	if m != nil && m.StringWithDef != nil {
+		return *m.StringWithDef
+	}
+	return Default_MockPbStruct_StringWithDef
+}
+
+func (m *MockPbStruct) GetStringWithNoDef() string {
+	if m != nil && m.StringWithNoDef != nil {
+		return *m.StringWithNoDef
+	}
+	return ""
+}
+
+func (m *MockPbStruct) GetEnumWithDef() MockPbEnum {
+	if m != nil && m.EnumWithDef != nil {
+		return *m.EnumWithDef
+	}
+	return Default_MockPbStruct_EnumWithDef
+}
+
+func (m *MockPbStruct) GetEnumWithNoDef() MockPbEnum {
+	if m != nil && m.EnumWithNoDef != nil {
+		return *m.EnumWithNoDef
+	}
+	return MockPbEnum_MC_MEMBER
+}
+
+func (m *MockPbStruct) GetInt64Slice() []int64 {
+	if m != nil {
+		return m.Int64Slice
+	}
+	return nil
+}
+
+func (m *MockPbStruct) GetStructSlice() []*MockInnerPbStruct {
+	if m != nil {
+		return m.StructSlice
+	}
+	return nil
+}
+
+func (m *MockPbStruct) GetStruct2() *MockInnerPbStruct {
+	if m != nil {
+		return m.Struct2
+	}
+	return nil
+}
 
 // -----------------------------------------------------------------------------------------
 
