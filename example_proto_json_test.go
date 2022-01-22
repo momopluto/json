@@ -16,30 +16,30 @@ import (
 
 enum MockPbEnum
 {
-	MC_MNG = 0;
-	MC_MEMBER = 1;
-	MC_MM = 2;
+  MC_MNG    = 0;
+  MC_MEMBER = 1;
+  MC_MM     = 2;
 }
 message MockInnerPbStruct
 {
-	optional string 			key 	= 1;
-	optional string 			value 	= 2;
-	optional string 			def 	= 3 [default = "def-str"];
+  optional string   key    = 1;
+  optional string   value  = 2;
+  optional string   def    = 3 [default = "def-str"];
 }
 message MockPbStruct
 {
-	optional int32 				int32_with_def 		= 1 [default = 10];
-	optional int32 				int32_with_no_def 	= 2;
-	optional bool  				bool_with_def 		= 3 [default = true];
-	optional bool  				bool_with_no_def 	= 4;
-	optional string 			string_with_def 	= 5 [default = "test-string"];
-	optional string 			string_with_no_def 	= 6;
-	optional MockPbEnum 		enum_with_def 		= 7 [default = MC_MEMBER];
-	optional MockPbEnum 		enum_with_no_def 	= 8;
+  optional int32              int32_with_def      = 1 [default = 10];
+  optional int32              int32_with_no_def   = 2;
+  optional bool               bool_with_def       = 3 [default = true];
+  optional bool               bool_with_no_def    = 4;
+  optional string             string_with_def     = 5 [default = "test-string"];
+  optional string             string_with_no_def  = 6;
+  optional MockPbEnum         enum_with_def       = 7 [default = MC_MEMBER];
+  optional MockPbEnum         enum_with_no_def    = 8;
 
-	repeated int64 				int64_slice 		= 9;
-	repeated MockInnerPbStruct 	struct_slice 		= 10;
-	optional MockInnerPbStruct 	struct2 			= 11;
+  repeated int64              int64_slice         = 9;
+  repeated MockInnerPbStruct  struct_slice        = 10;
+  optional MockInnerPbStruct  struct2             = 11;
 }
 */
 
