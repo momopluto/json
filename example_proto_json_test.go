@@ -288,7 +288,8 @@ func TestFillPbDefaultVal(t *testing.T) {
 		rspByte1, _ := officialjson.Marshal(rsp)
 		fmt.Printf("before fill default:\t %s\n", string(rspByte1))
 
-		FillPbDefaultVal(reflect.ValueOf(pm))
+		proto.SetDefaults(pm) // 自己实现完 FillPbDefaultVal() 后才发现官方库有提供相同作用方法
+		//FillPbDefaultVal(reflect.ValueOf(pm))
 
 		rspByte2, _ := officialjson.Marshal(rsp)
 		fmt.Printf(" after fill default:\t %s\n", string(rspByte2))
@@ -296,7 +297,8 @@ func TestFillPbDefaultVal(t *testing.T) {
 		fmt.Println("---------------------------")
 	}
 }
-
+//FillPbDefaultVal
+// @deprecated 使用 proto.SetDefaults() 代替
 func FillPbDefaultVal(val reflect.Value) {
 	// traverse until done
 
